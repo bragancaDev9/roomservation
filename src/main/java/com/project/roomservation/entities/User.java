@@ -1,6 +1,14 @@
 package com.project.roomservation.entities;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import com.project.roomservation.entities.enums.UserRole;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,36 +18,46 @@ import jakarta.persistence.Table;
 
 @Entity(name = "users")
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
+	private static final long serialVersionUID = 1L;
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long userId;
-	private String name;
-	private String password;
+	private Long id;
+	private String login, password;
+	private UserRole role;
 	
 	public User() {}
 
-	public User(Long userId, String name) {
-		this.userId = userId;
-		this.name = name;
+	public User(String login, String password, UserRole role) {
+		this.login = login;
+		this.password = password;
+		this.role = role;
 	}
 
-	public Long getUserId() {
-		return userId;
+	public User(Long id, String login, String password, UserRole role) {
+		this.id = id;
+		this.login = login;
+		this.password = password;
+		this.role = role;
 	}
 
-	public void setUserId(Long userId) {
-		this.userId = userId;
+	public Long getId() {
+		return id;
 	}
 
-	public String getName() {
-		return name;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public String getLogin() {
+		return login;
 	}
-	
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
 	public String getPassword() {
 		return password;
 	}
@@ -48,9 +66,28 @@ public class User {
 		this.password = password;
 	}
 
+	public UserRole getRole() {
+		return role;
+	}
+
+	public void setRole(UserRole role) {
+		this.role = role;
+	}
+
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		if (role == UserRole.ADMIN) return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_USER")); 
+		else return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
+	}
+
+	@Override
+	public String getUsername() {
+		return login;
+	}
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(userId);
+		return Objects.hash(id);
 	}
 
 	@Override
@@ -62,6 +99,6 @@ public class User {
 		if (getClass() != obj.getClass())
 			return false;
 		User other = (User) obj;
-		return Objects.equals(userId, other.userId);
+		return Objects.equals(id, other.id);
 	}
 }
